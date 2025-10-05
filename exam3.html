@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <title>排舞与艺术体操规则考试</title>
+    <style>
+        /* 全局基础样式（适配手机端） */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Arial", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background: #f5f5f5;
+            padding: 10px;
+            font-size: 14px;
+        }
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .container.active {
+            display: block;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #666;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+            transition: border 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4285f4;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4285f4;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 10px;
+        }
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background: #3367d6;
+        }
+        .tip {
+            color: #e74c3c;
+            margin-top: 8px;
+            font-size: 13px;
+            text-align: center;
+        }
+        .success-tip {
+            color: #2ecc71;
+            margin-top: 8px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* 规则页样式（手机端滚动优化） */
+        .rule-content {
+            line-height: 1.8;
+            color: #666;
+            margin-bottom: 20px;
+            height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .rule-content p {
+            margin-bottom: 8px;
+        }
+
+        /* 答题页样式（手机端垂直布局） */
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        #countdown {
+            color: #e74c3c;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .examiner-info {
+            font-size: 14px;
+            color: #333;
+        }
+        /* 手机端题目列表（横向滚动） */
+        .question-list {
+            display: flex;
+            gap: 8px;
+            padding: 10px 0;
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+        .question-item {
+            min-width: 36px;
+            height: 36px;
+            line-height: 36px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #666;
+            font-size: 14px;
+        }
+        .question-item.answered {
+            background: #2ecc71;
+            color: #fff;
+            border-color: #2ecc71;
+        }
+        .question-item.marked {
+            background: #e74c3c;
+            color: #fff;
+            border-color: #e74c3c;
+        }
+        .question-item.current {
+            border-color: #4285f4;
+            color: #4285f4;
+            font-weight: bold;
+        }
+        /* 答题区域（手机端占满宽度） */
+        .answer-area {
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .answer-area h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .options label {
+            cursor: pointer;
+            font-weight: normal;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        .options input[type="radio"] {
+            width: auto;
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        /* 功能按钮区域（手机端垂直排列） */
+        .function-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #abnormal-tip {
+            color: #e74c3c;
+            font-weight: bold;
+            margin: 10px 0;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+
+        /* 成绩页样式（手机端居中） */
+        .result-content {
+            line-height: 2.2;
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+            margin-top: 10px;
+        }
+        #total-score {
+            font-size: 30px;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        /* 管理员页面样式（手机端适配） */
+        .admin-nav {
+            text-align: right;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .admin-nav a {
+            color: #4285f4;
+            text-decoration: none;
+            margin-left: 15px;
+        }
+        /* 表格适配（手机端横向滚动） */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        .data-table th, .data-table td {
+            padding: 10px 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 12px;
+        }
+        .data-table th {
+            background: #f8f9fa;
+            color: #333;
+            font-weight: bold;
+        }
+        .data-table .view-detail {
+            padding: 6px 8px;
+            font-size: 12px;
+            width: auto;
+        }
+        /* 弹窗样式（手机端占满宽度） */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            padding: 15px;
+        }
+        .modal-content {
+            width: 100%;
+            max-width: 500px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .close-modal {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .close-modal button {
+            background: #e74c3c;
+            padding: 8px 12px;
+            width: auto;
+            margin-bottom: 0;
+        }
+        /* 管理员操作栏（手机端换行） */
+        .admin-operation {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .admin-operation button {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        /* 加载提示（新增，部署后网络适配） */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 加载提示（初始显示，加载完成后隐藏） -->
+    <div class="loading" id="loading">加载中...</div>
+
+    <!-- 管理员/考生入口切换（全局显示，手机端适配） -->
+    <div class="admin-nav">
+        <a href="javascript:;" id="to-admin">管理员</a>
+        <a href="javascript:;" id="to-exam" style="display: none;">考生</a>
+    </div>
+
+    <!-- 1. 考生信息填写页（手机端表单适配） -->
+    <div class="container" id="register-page">
+        <h1>排舞与艺术体操规则考试</h1>
+        <form id="register-form">
+            <div class="form-group">
+                <label>姓名（2-8字中文）：</label>
+                <input type="text" id="name" required placeholder="请输入真实姓名">
+            </div>
+            <div class="form-group">
+                <label>单位（5-50字符）：</label>
+                <input type="text" id="unit" required placeholder="请输入单位/学校">
+            </div>
+            <div class="form-group">
+                <label>联系电话（11位手机号）：</label>
+                <input type="tel" id="phone" required placeholder="请输入11位手机号">
+            </div>
+            <button type="submit" id="register-btn">提交并进入考试</button>
+            <div class="tip" id="register-tip"></div>
+        </form>
+    </div>
+
+    <!-- 2. 考试规则页（手机端滚动优化） -->
+    <div class="container" id="rule-page">
+        <h1>考试规则</h1>
+        <div class="rule-content">
+            <p>1. 考试内容：共50题（排舞25题+艺术体操25题），每题2分，满分100分，题目均来自《2025-2028年全国排舞竞赛评分规则》《中国学生艺术体操技术等级评分标准》。</p>
+            <p>2. 考试时长：1小时，从点击“开始考试”计时，超时自动提交。</p>
+            <p>3. 防作弊：禁止切换页面/打开其他APP，3次异常视为作弊，强制提交。</p>
+            <p>4. 答题：可点击题号切换题目，支持“标记题目”（红色），提交前确认所有题已答。</p>
+            <p>5. 成绩：提交后显示分数，记录保存在系统，管理员可查看导出。</p>
+        </div>
+        <button id="start-exam-btn" disabled>开始考试（5秒后可点击）</button>
+    </div>
+
+    <!-- 3. 答题页（手机端垂直布局） -->
+    <div class="container" id="exam-page">
+        <div class="exam-header">
+            <span class="examiner-info" id="examiner-info">考生：张三 | 单位：XX</span>
+            <span id="countdown">01:00:00</span>
+        </div>
+        <!-- 题目列表（横向滚动） -->
+        <div class="question-list" id="question-list"></div>
+        <!-- 答题区域 -->
+        <div class="answer-area">
+            <h3 id="current-question">1. 全国排舞比赛评分规则制定的核心目的是保证比赛的（）</h3>
+            <div class="options" id="current-options">
+                <label><input type="radio" name="option" value="A"> A. 公平、公证、严谨</label>
+                <label><input type="radio" name="option" value="B"> B. 公平、公正、规范</label>
+                <label><input type="radio" name="option" value="C"> C. 公平、公正、公开</label>
+                <label><input type="radio" name="option" value="D"> D. 公平、公正、正规</label>
+            </div>
+        </div>
+        <!-- 功能按钮 -->
+        <div class="function-area">
+            <div style="display: flex; gap: 10px;">
+                <button id="prev-btn" style="flex: 1;">上一题</button>
+                <button id="next-btn" style="flex: 1;">下一题</button>
+            </div>
+            <button id="mark-btn">标记题目</button>
+            <button id="submit-btn" style="background: #e74c3c;">提交试卷</button>
+            <div id="abnormal-tip">已检测到1次异常切换，剩余2次机会</div>
+        </div>
+    </div>
+
+    <!-- 4. 成绩页（手机端居中） -->
+    <div class="container" id="result-page">
+        <h1>考试成绩</h1>
+        <div class="result-content">
+            <p>姓名：<span id="result-name">张三</span></p>
+            <p>单位：<span id="result-unit">XX公司</span></p>
+            <p>联系电话：<span id="result-phone">138****5678</span></p>
+            <p>考试用时：<span id="used-time">45分20秒</span></p>
+            <p>最终成绩：<span id="total-score">92</span> 分</p>
+            <p style="color: #666; margin-top: 15px; font-size: 14px;">成绩已记录，可联系管理员查看详情</p>
+        </div>
+        <button id="back-home-btn" style="margin-top: 20px;">返回首页</button>
+    </div>
+
+    <!-- 5. 管理员登录页（手机端适配） -->
+    <div class="container" id="admin-login-page">
+        <h1>管理员登录</h1>
+        <form id="admin-login-form">
+            <div class="form-group">
+                <label>管理员账号：</label>
+                <input type="text" id="admin-username" required value="admin" placeholder="请输入账号">
+            </div>
+            <div class="form-group">
+                <label>管理员密码：</label>
+                <input type="password" id="admin-password" required placeholder="请输入密码">
+            </div>
+            <button type="submit" id="admin-login-btn">登录</button>
+            <div class="tip" id="admin-login-tip"></div>
+        </form>
+    </div>
+
+    <!-- 6. 管理员数据页（手机端表格滚动） -->
+    <div class="container" id="admin-data-page">
+        <h1>考生数据管理</h1>
+        <div class="admin-operation">
+            <button id="export-data-btn">导出数据（CSV）</button>
+            <button id="change-pwd-btn">修改密码</button>
+        </div>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>姓名</th>
+                        <th>单位</th>
+                        <th>联系电话</th>
+                        <th>考试时间</th>
+                        <th>成绩（分）</th>
+                        <th>异常次数</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="examiner-data-list">
+                    <tr><td colspan="8" style="color: #666;">暂无考生记录</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 答题详情弹窗 -->
+        <div class="modal" id="detail-modal">
+            <div class="modal-content">
+                <div class="close-modal">
+                    <button id="close-modal-btn">关闭</button>
+                </div>
+                <h2 id="modal-title" style="font-size: 18px; margin-bottom: 15px;">张三 - 答题详情</h2>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>题号</th>
+                                <th>题目类型</th>
+                                <th>题目内容</th>
+                                <th>考生答案</th>
+                                <th>正确答案</th>
+                                <th>得分</th>
+                            </tr>
+                        </thead>
+                        <tbody id="answer-detail-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 密码修改弹窗 -->
+        <div class="modal" id="password-modal">
+            <div class="modal-content">
+                <div class="close-modal">
+                    <button id="close-pwd-modal-btn">关闭</button>
+                </div>
+                <h2 style="font-size: 18px; margin-bottom: 15px;">修改管理员密码</h2>
+                <form id="change-pwd-form">
+                    <div class="form-group">
+                        <label>原密码：</label>
+                        <input type="password" id="old-pwd" required placeholder="请输入原密码">
+                    </div>
+                    <div class="form-group">
+                        <label>新密码（8-16位，含字母+数字）：</label>
+                        <input type="password" id="new-pwd" required placeholder="请输入新密码">
+                    </div>
+                    <div class="form-group">
+                        <label>确认新密码：</label>
+                        <input type="password" id="confirm-pwd" required placeholder="请再次输入新密码">
+                    </div>
+                    <button type="submit" id="submit-pwd-btn">确认修改</button>
+                    <div class="tip" id="pwd-tip"></div>
+                    <div class="success-tip" id="pwd-success-tip" style="display: none;"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行，隐藏加载提示并显示首页
+        window.onload = function() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('register-page').classList.add('active');
+        };
+
+        // ====================== 1. 题库数据（完全来自《题库.docx》） ======================
+        const QUESTION_BANK = {
+            lineDance: [
+                {id:1,content:"全国排舞比赛评分规则制定的核心目的是保证比赛的（）",options:{A:"公平、公证、严谨",B:"公平、公正、规范",C:"公平、公正、公开",D:"公平、公正、正规"},answer:"C"},
+                {id:2,content:"以下不属于集体比赛项目的是（）",options:{A:"集体规定曲目",B:"双人自选曲目",C:"集体串烧（两曲连跳）",D:"广场排舞"},answer:"B"},
+                {id:3,content:"排舞推广适合的场景包括（）",options:{A:"专业竞技比赛",B:"工间操、课间操、全民健身展示",C:"商业演出",D:"综艺节目录制"},answer:"B"},
+                {id:4,content:"职工中年组的平均年龄要求是（）",options:{A:"<35岁",B:">35岁",C:">50岁",D:"无年龄限制"},answer:"B"},
+                {id:5,content:"集体项目每队最低参赛人数为（）",options:{A:"8人",B:"12人",C:"16人",D:"20人"},answer:"B"},
+                {id:6,content:"预赛成绩与决赛的关系是（）",options:{A:"预赛占最终成绩30%",B:"预赛成绩不带入决赛",C:"预赛成绩占50%",D:"仅取预赛最高分"},answer:"B"},
+                {id:7,content:"裁判评分方针的核心原则是（）",options:{A:"效率优先",B:"公开、公平、公正、准确",C:"服从多数意见",D:"参考观众反馈"},answer:"B"},
+                {id:8,content:"国际友人组归属于比赛分组中的（）",options:{A:"社会组",B:"单独设置的“国际友人组”",C:"职工组",D:"院校组"},answer:"B"},
+                {id:9,content:"比赛服装的核心要求是（）",options:{A:"统一品牌",B:"符合曲目风格",C:"必须着紧身衣",D:"佩戴队徽"},answer:"B"},
+                {id:10,content:"长裙下摆的长度限制是（）",options:{A:"超过膝盖",B:"不超过踝关节",C:"可拖地设计",D:"无明确限制"},answer:"B"},
+                {id:11,content:"成套动作中明确禁止的危险动作是（）",options:{A:"快速旋转",B:"跳跃落地缓冲",C:"抛接、翻腾、叠罗汉",D:"地面滑动"},answer:"C"},
+                {id:12,content:"自选曲目比赛时，服装变化的限制是（）",options:{A:"可完全更换三套",B:"不允许离开身体",C:"需提前报备",D:"仅限装饰品拆卸"},answer:"B"},
+                {id:13,content:"鞋类选择的强制要求是（）",options:{A:"必须为专业舞蹈鞋",B:"要求安全，禁止细高跟鞋",C:"颜色统一",D:"无硬性规定"},answer:"B"},
+                {id:14,content:"造成身体伤害的“不安全动作”判断主体是（）",options:{A:"领队申请裁定",B:"裁判直接判定",C:"医疗团队确认",D:"选手投票决定"},answer:"B"},
+                {id:15,content:"服装装饰品的合法性取决于（）",options:{A:"赞助商提供",B:"不影响动作安全性",C:"重量不超过200克",D:"不超过5件"},answer:"B"},
+                {id:16,content:"关于帽子的规定正确的是（）",options:{A:"禁止佩戴",B:"需与组委会申请",C:"符合曲目风格即可使用",D:"仅限儿童组使用"},answer:"C"},
+                {id:17,content:"比赛场地的最小面积为（）",options:{A:"10平方米",B:"16平方米",C:"20平方米",D:"25平方米"},answer:"B"},
+                {id:18,content:"三曲连跳（串烧A）的音乐时长范围是（）",options:{A:"3′00″-4′00″",B:"5′00″-6′00″",C:"7′00″-8′00″",D:"由队伍自定"},answer:"B"},
+                {id:19,content:"裁判席的标准位置是（）",options:{A:"场地侧方",B:"场地正前方",C:"观众席中央",D:"移动观察位"},answer:"B"},
+                {id:20,content:"结束动作的正确处理方式是（）",options:{A:"必须静止造型",B:"可选择造型或在音乐中退场",C:"立即离场",D:"等待裁判示意"},answer:"B"},
+                {id:21,content:"广告标贴的使用权限属于（）",options:{A:"参赛队自行设计",B:"组委会与赞助商协商",C:"裁判委员会批准",D:"无限制"},answer:"B"},
+                {id:22,content:"对音乐风格的要求是（）",options:{A:"仅限民族音乐",B:"需与舞蹈编排契合",C:"必须使用规定专辑",D:"禁止外文歌曲"},answer:"B"},
+                {id:23,content:"舞蹈技巧评分不包括（）",options:{A:"队形复杂度",B:"舞步准确性",C:"动作流畅性",D:"动作稳定性"},answer:"A"},
+                {id:24,content:"“舞蹈表现力”的核心评价内容是（）",options:{A:"服装华丽度",B:"情感传达与艺术感染力",C:"动作难度系数",D:"音乐音量控制"},answer:"B"},
+                {id:25,content:"原创曲目的核心评分依据是（）",options:{A:"使用道具数量",B:"动作设计的独特性与创新性",C:"参赛人数规模",D:"音乐版权级别"},answer:"B"},
+                {id:26,content:"广场排舞的特定扣分项是（）",options:{A:"未使用指定服装",B:"队形混乱或偏离中心区域",C:"动作速度过快",D:"音乐超时"},answer:"B"},
+                {id:27,content:"服装的评分维度包含（）",options:{A:"价格标签",B:"视觉效果与风格匹配度",C:"品牌知名度",D:"颜色数量"},answer:"B"},
+                {id:28,content:"集体项目中，影响“团队协作”分的是（）",options:{A:"个人高难度动作",B:"动作同步率与空间利用",C:"领舞者表现",D:"音乐切换次数"},answer:"B"},
+                {id:29,content:"规定曲目编排时，选手入场时间要求是（）",options:{A:"音乐播放后入场",B:"音乐前奏开始时已在位置",C:"第一歌词响起时动作",D:"裁判哨声后启动"},answer:"B"},
+                {id:30,content:"“舞蹈创意”评分侧重（）",options:{A:"借用经典舞蹈片段",B:"动作组合新颖性与结构设计",C:"使用高科技道具",D:"邀请嘉宾助演"},answer:"B"},
+                {id:31,content:"安全违规的直接后果是（）",options:{A:"扣总分10%",B:"取消当场成绩",C:"警告不扣分",D:"降低难度分"},answer:"B"},
+                {id:32,content:"裁判独立评分的含义是（）",options:{A:"无需讨论",B:"禁止协商，各自提交分数",C:"仅主裁决定",D:"取平均分"},answer:"B"},
+                {id:33,content:"中学生乙组的年级范围是（）",options:{A:"1-3年级",B:"7-9年级",C:"10-12年级",D:"大学预科"},answer:"B"},
+                {id:34,content:"对裁判评分的流程要求是（）",options:{A:"预赛可修改分数",B:"“独立评分、果断出分”",C:"需说明扣分理由",D:"接受队伍申诉"},answer:"B"},
+                {id:35,content:"曲目超时的处理方式是（）",options:{A:"允许完成表演",B:"每超时10秒扣0.5分",C:"终止表演",D:"取消创意分"},answer:"B"},
+                {id:36,content:"队伍构成必须包含的角色是（）",options:{A:"赞助商代表",B:"领队与教练",C:"专职摄影师",D:"替补选手"},answer:"B"},
+                {id:37,content:"社会常青组的年龄门槛是（）",options:{A:">35岁",B:">50岁",C:">60岁",D:">70岁"},answer:"B"},
+                {id:38,content:"集体串烧曲目的最少曲目数是（）",options:{A:"单曲",B:"两曲",C:"四曲",D:"五曲"},answer:"B"},
+                {id:39,content:"若动作导致选手受伤，责任认定依据是（）",options:{A:"选手签署免责书",B:"裁判是否提前判定为危险动作",C:"医疗报告",D:"观众投票"},answer:"B"},
+                {id:40,content:"比赛最终成绩的确认方式是（）",options:{A:"预赛最高分",B:"决赛现场分",C:"两轮平均分",D:"网络投票加权"},answer:"B"}
+            ],
+            rhythmicGymnastics: [
+                {id:41,content:"一级徒手操“半蹲同时头侧屈”的分值是（）",options:{A:"0.25",B:"0.50",C:"1.00",D:"0.75"},answer:"B"},
+                {id:42,content:"二级圈操“圈位于腰间，两手向右拨圈，圈以腰为轴连续水平转动”的分值是（）",options:{A:"0.50",B:"1.00",C:"0.75",D:"0.25"},answer:"A"},
+                {id:43,content:"三级纱巾操“起踵立向上小抛纱巾，然后接纱巾的另一边”的分值是（）",options:{A:"0.50",B:"1.00",C:"0.75",D:"0.25"},answer:"A"},
+                {id:44,content:"四级徒手操“双脚起跳的鹿跳”的分值是（）",options:{A:"0.50",B:"1.00",C:"0.75",D:"0.25"},answer:"A"},
+                {id:45,content:"一级球操“两腿由前向后滑动经横劈腿成俯卧，左、右小腿依次后踢3次”的分值是（）",options:{A:"0.50",B:"1.00",C:"0.75",D:"0.25"},answer:"A"},
+                {id:46,content:"二级徒手操“左手撑地经桥顶胸腰起”的分值是（）",options:{A:"0.50",B:"1.00",C:"0.75",D:"0.25"},answer:"A"},
+                {id:47,content:"三级徒手操“足尖碎步后退，同时身体螺旋波浪两臂随身体绕至侧举”的分值是（）",options:{A:"0.50",B:"1.00",C:"0.75",D:"0.25"},answer:"A"},
+                {id:48,content:"四级绳操“向前摇绳屈直腿过绳小跳和高抬腿过绳小跳各4次”的分值是（）",options:{A:"0.50",B:"1.00",C:"0.75",D:"0.25"},answer:"A"},
+                {id:49,content:"一级至六级大跳时，两腿前后/左右分腿开度低于（）算未完成动作",options:{A:"120°",B:"135°",C:"150°",D:"160°"},answer:"B"},
+                {id:50,content:"单足转体360°以上动作，一级至六级差（）不足规定度数算未完成",options:{A:"30°",B:"45°",C:"60°",D:"90°"},answer:"B"},
+                {id:51,content:"“改变规定动作性质，以另一个动作代替（如大跨跳做成鹿跳）”属于（）",options:{A:"未完成动作的一般标准",B:"错误扣标准",C:"器械技术错误",D:"身体技术错误"},answer:"A"},
+                {id:52,content:"“抛、接动作时改变规定性质或未接触器械”属于（）",options:{A:"未完成动作的一般标准",B:"错误扣分标准",C:"器械技术错误",D:"身体技术错误"},answer:"A"},
+                {id:53,content:"器械掉地后，无移动或短距离（1-3步）捡起，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"A"},
+                {id:54,content:"抛物线不准确，移动3步以上接空中器械，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"B"},
+                {id:55,content:"身体平衡动作“姿势缺乏幅度；既不固定也未保持住”，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"B"},
+                {id:56,content:"转体动作“在旋转过程中移动”，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"C"},
+                {id:57,content:"集体项目“运动员或器械相撞”，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"B"},
+                {id:58,content:"身体跳动作“姿势缺乏幅度；落地重”，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"A"},
+                {id:59,content:"器械绳“一端脱落，动作短暂中断”，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"A"},
+                {id:60,content:"集体项目“队形改变”，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"A"},
+                {id:61,content:"身体转体“立踵旋转时用脚跟支撑”，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"B"},
+                {id:62,content:"以下属于“未完成动作”的是（）",options:{A:"跳步落地重",B:"转体时姿态不固定",C:"用鹿跳代替大跨跳",D:"器械掉地后捡起"},answer:"C"},
+                {id:63,content:"以下不属于“身体难度未完成”的是（）",options:{A:"平衡姿态保持时间不足",B:"跳步空中姿态不准确",C:"转体时未提踵",D:"器械掉地"},answer:"D"},
+                {id:64,content:"一级至六级转体动作“差45°不足规定度数”，属于（）",options:{A:"未完成动作",B:"错误扣分",C:"器械技术错误",D:"身体技术错误"},answer:"A"},
+                {id:65,content:"“做一组动作时不足规定数量（如规定4次过绳跳完成3次）”，属于（）",options:{A:"未完成动作",B:"错误扣分",C:"器械技术错误",D:"身体技术错误"},answer:"A"},
+                {id:66,content:"圈操“通过圈时脚绊圈”，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"B"},
+                {id:67,content:"球操“球靠在前臂上”，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"A"},
+                {id:68,content:"绳操“脚绊绳导致动作中断”，扣（）",options:{A:"0.10",B:"0.20",C:"0.30",D:"0.40"},answer:"B"},
+                {id:69,content:"以下哪种情况属于“未完成动作”（）",options:{A:"大跨跳开度130°（七级）",B:"转体360°时提踵完成（五级）",C:"连续4次过绳小跳完成3次",D:"抛接后器械未掉落"},answer:"C"},
+                {id:70,content:"集体项目中，难度动作未完成的条件是（）",options:{A:"1名运动员失误",B:"多数运动员未准确完成",C:"器械掉落",D:"音乐不匹配"},answer:"B"},
+                {id:71,content:"“以鹿跳代替大跨跳”属于（）",options:{A:"附加动作",B:"未完成动作",C:"器械错误",D:"动作编排错误"},answer:"B"},
+                {id:72,content:"平衡动作固定姿态保持时间不足会导致（）",options:{A:"扣0.1分",B:"未完成动作",C:"器械扣分",D:"无影响"},answer:"B"},
+                {id:73,content:"器械掉地导致运动中断属于（）",options:{A:"完成错误",B:"未完成动作",C:"附加动作",D:"编排错误"},answer:"B"},
+                {id:74,content:"连续2次大跳中间加入步伐，应判定（）",options:{A:"未完成动作",B:"附加动作",C:"动作中断",D:"不扣分"},answer:"A"},
+                {id:75,content:"一级运动员大跨跳开度120°，应判定（）",options:{A:"有效动作",B:"未完成动作",C:"扣0.1分",D:"器械错误"},answer:"B"},
+                {id:76,content:"漏做3个无分值动作，应扣（）",options:{A:"0.1分",B:"0.2分",C:"扣该动作分",D:"不扣分"},answer:"A"},
+                {id:77,content:"以简单抛接代替规定抛接（有分值动作），应扣（）",options:{A:"0.1分",B:"0.2分",C:"该动作全部分值",D:"不扣分"},answer:"C"},
+                {id:78,content:"附加动作的扣分标准是（）",options:{A:"每次0.3分",B:"每次0.1分",C:"按动作数量扣",D:"不扣分"},answer:"B"},
+                {id:79,content:"未完成1个无分值动作且导致其他错误，应（）",options:{A:"仅扣未完成分",B:"按实际错误扣分",C:"扣0.3分",D:"忽略"},answer:"B"},
+                {id:80,content:"同时漏做4个无分值动作，扣分应为（）",options:{A:"0.1分",B:"0.2分",C:"0.3分",D:"不扣分"},answer:"B"},
+                {id:81,content:"3个动作与音乐不吻合，应扣（）",options:{A:"0.1分",B:"0.2分",C:"0.3分",D:"不扣分"},answer:"A"},
+                {id:82,content:"球滚动手臂时滑至前臂，应扣（）",options:{A:"0.1分",B:"0.2分",C:"0.3分",D:"不扣分"},answer:"A"},
+                {id:83,content:"完成旋转时未立踵，扣分标准是（）",options:{A:"0.1分",B:"0.2分",C:"根据移动步数",D:"不扣分"},answer:"A"},
+                {id:84,content:"绳操中跳步绊绳但未中断，扣（）",options:{A:"0.1分",B:"0.2分",C:"0.3分",D:"不扣"},answer:"A"},
+                {id:85,content:"落地失去平衡需移动3步恢复，扣（）",options:{A:"0.1分",B:"0.2分",C:"0.3分",D:"不扣分"},answer:"B"},
+                {id:86,content:"全套动作幅度不足，扣（）",options:{A:"0.1分",B:"0.2分",C:"0.3分",D:"1.0分"},answer:"C"},
+                {id:87,content:"集体队形改变未影响移动，扣（）",options:{A:"0.1分",B:"0.2分",C:"0.3分",D:"不扣分"},answer:"A"},
+                {id:88,content:"两名运动员器械相撞导致掉棒，应扣（）",options:{A:"0.1分",B:"0.2分",C:"0.3分",D:"按每人扣分"},answer:"C"},
+                {id:89,content:"集体抛接后，一名运动员移动4步接住器械，扣（）",options:{A:"0.1分（个人）",B:"0.2分（集体）",C:"0.3分（集体）",D:"不扣分"},answer:"B"},
+                {id:90,content:"集体结束时多数队员表情僵硬，应扣（）",options:{A:"0.1分",B:"0.2分",C:"0.3分",D:"不扣分"},answer:"B"}
+            ]
+        };
+
+        // ====================== 2. 全局状态管理（本地存储，支持手机端） ======================
+        const STATE = {
+            adminPassword: localStorage.getItem('adminPassword') || 'admin123',
+            currentUser: null,
+            currentPaper: [],
+            currentQuesIndex: 0,
+            userAnswers: {},
+            markedQues: new Set(),
+            abnormalCount: 0,
+            countdownTimer: null,
+            examinerRecords: JSON.parse(localStorage.getItem('examinerRecords')) || []
+        };
+
+        // ====================== 3. 工具函数（适配手机端交互） ======================
+        function randomSelectQues(type, count) {
+            const source = [...QUESTION_BANK[type]];
+            const result = [];
+            for (let i = 0; i < count; i++) {
+                if (source.length === 0) break;
+                const randomIdx = Math.floor(Math.random() * source.length);
+                result.push(source.splice(randomIdx, 1)[0]);
+            }
+            return result;
+        }
+
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function genExamId() {
+            return `exam_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        }
+
+        function calcScore() {
+            let score = 0;
+            STATE.currentPaper.forEach(ques => {
+                if (STATE.userAnswers[ques.id] === ques.answer) score += 2;
+            });
+            return score;
+        }
+
+        function saveExamRecord() {
+            const endTime = new Date();
+            const startTime = new Date(STATE.currentUser.startTime);
+            const usedSeconds = Math.floor((endTime - startTime) / 1000);
+            const usedTime = `${Math.floor(usedSeconds / 60)}分${usedSeconds % 60}秒`;
+            const score = calcScore();
+            
+            const record = {
+                examId: STATE.currentUser.examId,
+                name: STATE.currentUser.name,
+                unit: STATE.currentUser.unit,
+                phone: STATE.currentUser.phone,
+                startTime: STATE.currentUser.startTime,
+                endTime: endTime.toISOString(),
+                usedTime: usedTime,
+                score: score,
+                abnormalCount: STATE.abnormalCount,
+                answers: STATE.userAnswers,
+                paper: STATE.currentPaper
+            };
+
+            const existIdx = STATE.examinerRecords.findIndex(r => r.examId === record.examId);
+            if (existIdx > -1) {
+                STATE.examinerRecords[existIdx] = record;
+            } else {
+                STATE.examinerRecords.push(record);
+            }
+            localStorage.setItem('examinerRecords', JSON.stringify(STATE.examinerRecords));
+            return record;
+        }
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.container').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+
+            document.getElementById('to-admin').style.display = 
+                pageId !== 'admin-login-page' && pageId !== 'admin-data-page' ? 'inline' : 'none';
+            document.getElementById('to-exam').style.display = 
+                pageId === 'admin-login-page' || pageId === 'admin-data-page' ? 'inline' : 'none';
+        }
+
+        // ====================== 4. 考生端逻辑（手机端交互优化） ======================
+        // 4.1 考生信息提交（适配手机端输入）
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const unit = document.getElementById('unit').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const tip = document.getElementById('register-tip');
+
+            const isPhoneExist = STATE.examinerRecords.some(r => r.phone === phone);
+            if (isPhoneExist) {
+                tip.textContent = '该手机号已参与考试，请勿重复提交';
+                return;
+            }
+
+            if (!/^[\u4e00-\u9fa5]{2,8}$/.test(name)) {
+                tip.textContent = '姓名需为2-8字中文';
+                return;
+            }
+            if (unit.length < 5 || unit.length > 50) {
+                tip.textContent = '单位需为5-50字符';
+                return;
+            }
+            if (!/^1[3-9]\d{9}$/.test(phone)) {
+                tip.textContent = '请输入有效的11位手机号';
+                return;
+            }
+
+            STATE.currentUser = {
+                name, unit, phone,
+                examId: genExamId(),
+                startTime: new Date().toISOString()
+            };
+            tip.textContent = '';
+
+            switchPage('rule-page');
+
+            let count = 5;
+            const startBtn = document.getElementById('start-exam-btn');
+            const timer = setInterval(() => {
+                count--;
+                startBtn.textContent = `开始考试（${count}秒后可点击）`;
+                if (count === 0) {
+                    clearInterval(timer);
+                    startBtn.textContent = '开始考试';
+                    startBtn.disabled = false;
+                }
+            }, 1000);
+        });
+
+        // 4.2 开始考试（手机端布局适配）
+        document.getElementById('start-exam-btn').addEventListener('click', () => {
+            const lineDanceQues = randomSelectQues('lineDance', 25);
+            const gymQues = randomSelectQues('rhythmicGymnastics', 25);
+            STATE.currentPaper = [...lineDanceQues, ...gymQues].sort(() => Math.random() - 0.5);
+            
+            STATE.currentQuesIndex = 0;
+            STATE.userAnswers = {};
+            STATE.markedQues.clear();
+            STATE.abnormalCount = 0;
+
+            // 渲染横向滚动的题目列表
+            const quesListEl = document.getElementById('question-list');
+            quesListEl.innerHTML = '';
+            STATE.currentPaper.forEach((_, idx) => {
+                const quesItem = document.createElement('div');
+                quesItem.className = `question-item ${idx === 0 ? 'current' : ''}`;
+                quesItem.textContent = idx + 1;
+                quesItem.addEventListener('click', () => {
+                    STATE.currentQuesIndex = idx;
+                    renderCurrentQues();
+                });
+                quesListEl.appendChild(quesItem);
+            });
+
+            renderCurrentQues();
+
+            document.getElementById('examiner-info').textContent = 
+                `考生：${STATE.currentUser.name} | 单位：${STATE.currentUser.unit}`;
+
+            startCountdown(3600);
+            startPageMonitor();
+            switchPage('exam-page');
+        });
+
+        // 渲染当前题目（手机端选项样式优化）
+        function renderCurrentQues() {
+            const currentQues = STATE.currentPaper[STATE.currentQuesIndex];
+            const quesEl = document.getElementById('current-question');
+            const optionsEl = document.getElementById('current-options');
+            const abnormalTip = document.getElementById('abnormal-tip');
+
+            quesEl.textContent = `${STATE.currentQuesIndex + 1}. ${currentQues.content}`;
+
+            let optionsHtml = '';
+            Object.entries(currentQues.options).forEach(([key, val]) => {
+                const isChecked = STATE.userAnswers[currentQues.id] === key ? 'checked' : '';
+                optionsHtml += `<label><input type="radio" name="option" value="${key}" ${isChecked}> ${key}. ${val}</label>`;
+            });
+            optionsEl.innerHTML = optionsHtml;
+
+            document.querySelectorAll('input[name="option"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    STATE.userAnswers[currentQues.id] = radio.value;
+                    document.querySelectorAll('.question-item')[STATE.currentQuesIndex].classList.add('answered');
+                });
+            });
+
+            document.querySelectorAll('.question-item').forEach((item, idx) => {
+                item.classList.remove('current');
+                if (idx === STATE.currentQuesIndex) item.classList.add('current');
+                if (STATE.markedQues.has(idx)) item.classList.add('marked');
+                else item.classList.remove('marked');
+            });
+
+            if (STATE.abnormalCount > 0) {
+                abnormalTip.style.display = 'block';
+                abnormalTip.textContent = `已检测到${STATE.abnormalCount}次异常切换，剩余${3 - STATE.abnormalCount}次机会`;
+            } else {
+                abnormalTip.style.display = 'none';
+            }
+        }
+
+        // 倒计时（手机端字体适配）
+        function startCountdown(totalSeconds) {
+            if (STATE.countdownTimer) clearInterval(STATE.countdownTimer);
+
+            const countdownEl = document.getElementById('countdown');
+            countdownEl.textContent = formatTime(totalSeconds);
+
+            STATE.countdownTimer = setInterval(() => {
+                totalSeconds--;
+                countdownEl.textContent = formatTime(totalSeconds);
+
+                if (totalSeconds <= 0) {
+                    clearInterval(STATE.countdownTimer);
+                    submitPaper();
+                }
+
+                if (totalSeconds <= 600) {
+                    countdownEl.style.animation = 'blink 1s infinite alternate';
+                }
+            }, 1000);
+
+            const style = document.createElement('style');
+            style.textContent = '@keyframes blink { from { opacity: 1; } to { opacity: 0.5; } }';
+            document.head.appendChild(style);
+        }
+
+        // 防切换监控（适配手机端APP切换）
+        function startPageMonitor() {
+            let lastVisibleTime = new Date().getTime();
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    lastVisibleTime = new Date().getTime();
+                } else {
+                    const hiddenDuration = new Date().getTime() - lastVisibleTime;
+                    if (hiddenDuration > 2000) {
+                        STATE.abnormalCount++;
+                        renderCurrentQues();
+
+                        if (STATE.abnormalCount >= 3) {
+                            clearInterval(STATE.countdownTimer);
+                            alert('异常切换达3次，视为作弊，已强制提交');
+                            submitPaper();
+                        }
+                    }
+                }
+            });
+
+            // 拦截手机端返回键（部分浏览器支持）
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' || e.key === 'Escape') {
+                    e.preventDefault();
+                    STATE.abnormalCount++;
+                    renderCurrentQues();
+                }
+            });
+        }
+
+        // 4.3 答题页按钮（手机端触摸优化）
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (STATE.currentQuesIndex > 0) {
+                STATE.currentQuesIndex--;
+                renderCurrentQues();
+            }
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (STATE.currentQuesIndex < STATE.currentPaper.length - 1) {
+                STATE.currentQuesIndex++;
+                renderCurrentQues();
+            }
+        });
+
+        document.getElementById('mark-btn').addEventListener('click', () => {
+            const idx = STATE.currentQuesIndex;
+            if (STATE.markedQues.has(idx)) {
+                STATE.markedQues.delete(idx);
+            } else {
+                STATE.markedQues.add(idx);
+            }
+            renderCurrentQues();
+        });
+
+        document.getElementById('submit-btn').addEventListener('click', () => {
+            const unAnswered = STATE.currentPaper.filter(ques => !STATE.userAnswers[ques.id]);
+            if (unAnswered.length > 0 && !confirm(`尚有${unAnswered.length}题未答，确认提交？`)) {
+                return;
+            }
+            submitPaper();
+        });
+
+        function submitPaper() {
+            if (STATE.countdownTimer) clearInterval(STATE.countdownTimer);
+
+            const record = saveExamRecord();
+
+            document.getElementById('result-name').textContent = record.name;
+            document.getElementById('result-unit').textContent = record.unit;
+            document.getElementById('result-phone').textContent = record.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+            document.getElementById('used-time').textContent = record.usedTime;
+            document.getElementById('total-score').textContent = record.score;
+
+            switchPage('result-page');
+        }
+
+        // 4.4 成绩页返回（手机端一键操作）
+        document.getElementById('back-home-btn').addEventListener('click', () => {
+            document.getElementById('register-form').reset();
+            document.getElementById('register-tip').textContent = '';
+            switchPage('register-page');
+        });
+
+        // ====================== 5. 管理员端逻辑（手机端适配） ======================
+        document.getElementById('to-admin').addEventListener('click', () => {
+            switchPage('admin-login-page');
+        });
+        document.getElementById('to-exam').addEventListener('click', () => {
+            switchPage('register-page');
+        });
+
+        document.getElementById('admin-login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('admin-username').value.trim();
+            const password = document.getElementById('admin-password').value.trim();
+            const tip = document.getElementById('admin-login-tip');
+
+            if (username === 'admin' && password === STATE.adminPassword) {
+                tip.textContent = '';
+                renderExaminerList();
+                switchPage('admin-data-page');
+            } else {
+                tip.textContent = '账号或密码错误，请重新输入';
+            }
+        });
+
+        function renderExaminerList() {
+            const listEl = document.getElementById('examiner-data-list');
+            listEl.innerHTML = '';
+
+            if (STATE.examinerRecords.length === 0) {
+                listEl.innerHTML = '<tr><td colspan="8" style="color: #666;">暂无考生记录</td></tr>';
+                return;
+            }
+
+            STATE.examinerRecords.forEach((record, idx) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td>${record.name}</td>
+                    <td>${record.unit}</td>
+                    <td>${record.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}</td>
+                    <td>${new Date(record.startTime).toLocaleString()}</td>
+                    <td>${record.score}</td>
+                    <td>${record.abnormalCount}</td>
+                    <td><button class="view-detail" data-examid="${record.examId}">查看</button></td>
+                `;
+                listEl.appendChild(row);
+            });
+
+            document.querySelectorAll('.view-detail').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const examId = btn.getAttribute('data-examid');
+                    const record = STATE.examinerRecords.find(r => r.examId === examId);
+                    if (record) renderAnswerDetail(record);
+                });
+            });
+        }
+
+        function renderAnswerDetail(record) {
+            const modalTitle = document.getElementById('modal-title');
+            const detailList = document.getElementById('answer-detail-list');
+
+            modalTitle.textContent = `${record.name} - 答题详情（总分：${record.score}分）`;
+
+            detailList.innerHTML = '';
+            record.paper.forEach((ques, idx) => {
+                const userAns = record.answers[ques.id] || '未作答';
+                const isCorrect = userAns === ques.answer;
+                const score = isCorrect ? 2 : 0;
+                const quesType = ques.id <= 40 ? '排舞规则' : '艺术体操';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td>${quesType}</td>
+                    <td>${ques.content}</td>
+                    <td style="color: ${isCorrect ? '#2ecc71' : '#e74c3c'}">${userAns}</td>
+                    <td>${ques.answer}</td>
+                    <td>${score}</td>
+                `;
+                detailList.appendChild(row);
+            });
+
+            document.getElementById('detail-modal').style.display = 'flex';
+        }
+
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            document.getElementById('detail-modal').style.display = 'none';
+        });
+
+        document.getElementById('export-data-btn').addEventListener('click', () => {
+            if (STATE.examinerRecords.length === 0) {
+                alert('暂无考生记录可导出');
+                return;
+            }
+
+            const header = '序号,姓名,单位,联系电话,考试开始时间,考试结束时间,考试用时,成绩（分）,异常次数\n';
+            const content = STATE.examinerRecords.map((record, idx) => {
+                return `${idx + 1},${record.name},${record.unit},${record.phone},${new Date(record.startTime).toLocaleString()},${new Date(record.endTime).toLocaleString()},${record.usedTime},${record.score},${record.abnormalCount}`;
+            }).join('\n');
+
+            const blob = new Blob([header + content], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `考生记录_${new Date().toLocaleDateString()}.csv`);
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+
+        // 密码修改（手机端表单适配）
+        document.getElementById('change-pwd-btn').addEventListener('click', () => {
+            document.getElementById('pwd-tip').textContent = '';
+            document.getElementById('pwd-success-tip').style.display = 'none';
+            document.getElementById('change-pwd-form').reset();
+            document.getElementById('password-modal').style.display = 'flex';
+        });
+
+        document.getElementById('close-pwd-modal-btn').addEventListener('click', () => {
+            document.getElementById('password-modal').style.display = 'none';
+        });
+
+        document.getElementById('change-pwd-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const oldPwd = document.getElementById('old-pwd').value.trim();
+            const newPwd = document.getElementById('new-pwd').value.trim();
+            const confirmPwd = document.getElementById('confirm-pwd').value.trim();
+            const tip = document.getElementById('pwd-tip');
+            const successTip = document.getElementById('pwd-success-tip');
+
+            if (oldPwd !== STATE.adminPassword) {
+                tip.textContent = '原密码输入错误';
+                return;
+            }
+
+            if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/.test(newPwd)) {
+                tip.textContent = '新密码需8-16位，且包含字母和数字';
+                return;
+            }
+
+            if (newPwd !== confirmPwd) {
+                tip.textContent = '两次输入的新密码不一致';
+                return;
+            }
+
+            STATE.adminPassword = newPwd;
+            localStorage.setItem('adminPassword', newPwd);
+            
+            tip.textContent = '';
+            successTip.style.display = 'block';
+            successTip.textContent = '密码修改成功！下次登录请使用新密码';
+
+            setTimeout(() => {
+                document.getElementById('password-modal').style.display = 'none';
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
